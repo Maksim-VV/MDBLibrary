@@ -1,0 +1,9 @@
+spring:
+  data:
+    mongodb:
+      database: MD_Library
+    
+logging:
+  level:
+    root: error
+
