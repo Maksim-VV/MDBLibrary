@@ -5,11 +5,10 @@ import com.vasiliska.MDBLibrary.domain.Book;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import java.util.List;
+import java.util.Optional;
 
 
-public interface BookRep extends MongoRepository<Book, String> {
-
-    List<Book> findAll();
+public interface BookRepository extends MongoRepository<Book, String> {
 
     Book findBookByBookName(String bookName);
 
@@ -20,5 +19,5 @@ public interface BookRep extends MongoRepository<Book, String> {
     int deleteBookByBookName(String bookName);
 
     @Query("{comments : {$exists:true}, $where:'this.comments.length > 0'}")
-    List<Book> findBooksBy();
+    List<Book> findBooksWthisComment();
 }

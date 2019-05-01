@@ -2,10 +2,12 @@ package com.vasiliska.MDBLibrary.service;
 
 
 import com.vasiliska.MDBLibrary.domain.Book;
-import com.vasiliska.MDBLibrary.repository.BookRep;
+import com.vasiliska.MDBLibrary.repository.BookRepository;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,11 +15,11 @@ import java.util.List;
 @Service
 public class ShellServiceImpl implements ShellService {
 
-    private BookRep bookRep;
+    private BookRepository bookRepository;
 
     @Autowired
-    public ShellServiceImpl(BookRep bookRep) {
-        this.bookRep = bookRep;
+    public ShellServiceImpl(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
     }
 
     private final String MSG_DONT_FIND = "Объект не найден!";
@@ -30,25 +32,30 @@ public class ShellServiceImpl implements ShellService {
 
     @Override
     public String addNewBook(String bookName, String authorName, String genreName) {
-        Book book = bookRep.findBookByBookName(bookName);
+        Book book = bookRepository.findBookByBookName(bookName);
         if (book != null) {
             if (book.getAuthor().equals(authorName) && book.getGenre().equals(genreName)) {
                 return String.format(MSG_BOOK_IS_EXIST, bookName);
             }
         }
 
-        bookRep.save(new Book(bookName, authorName, genreName));
+        bookRepository.save(new Book(bookName, authorName, genreName));
         return String.format(MSG_ADD_NEW_BOOK, bookName);
     }
 
     @Override
     public String bookByName(String bookName) {
-        return bookRep.findBookByBookName(bookName).toString();
+        val book = bookRepository.findBookByBookName(bookName);
+        if (book == null) {
+            return MSG_DONT_FIND;
+        }
+
+        return book.toString();
     }
 
     @Override
     public String delBook(String bookName) {
-        if (bookRep.deleteBookByBookName(bookName) > 0) {
+        if (bookRepository.deleteBookByBookName(bookName) > 0) {
             return String.format(MSG_DELETE_BOOK, bookName);
         }
         return String.format(MSG_DONT_FIND, bookName);
@@ -56,22 +63,22 @@ public class ShellServiceImpl implements ShellService {
 
     @Override
     public String bookByGenre(String genre) {
-        return showBooks(bookRep.findBookByGenre(genre));
+        return showBooks(bookRepository.findBookByGenre(genre));
     }
 
     @Override
     public String bookByAuthor(String author) {
-        return showBooks(bookRep.findBooksByAuthor(author));
+        return showBooks(bookRepository.findBooksByAuthor(author));
     }
 
     @Override
     public String showAllBooks() {
-        return showBooks(bookRep.findAll());
+        return showBooks(bookRepository.findAll());
     }
 
     @Override
     public String addComment(String commentText, String bookName) {
-        Book book = bookRep.findBookByBookName(bookName);
+        Book book = bookRepository.findBookByBookName(bookName);
         if (book == null) {
             return MSG_DONT_FIND;
         }
@@ -82,14 +89,14 @@ public class ShellServiceImpl implements ShellService {
         }
         comments.add(commentText);
         book.setComments(comments);
-        book = bookRep.save(book);
+        book = bookRepository.save(book);
 
         return String.format(MSG_ADD_NEW_COMMENT, book.getBookName());
     }
 
     @Override
     public String getCommentsByBook(String bookName) {
-        Book book = bookRep.findBookByBookName(bookName);
+        Book book = bookRepository.findBookByBookName(bookName);
         if (book == null) {
             return MSG_DONT_FIND;
         }
@@ -98,7 +105,7 @@ public class ShellServiceImpl implements ShellService {
 
     @Override
     public String getBooksIsComment() {
-        List<Book> listBooks = bookRep.findBooksBy();
+        List<Book> listBooks = bookRepository.findBooksWthisComment();
         if (listBooks == null || listBooks.isEmpty()) {
             return MSG_DONT_FIND;
         }
@@ -125,6 +132,8 @@ public class ShellServiceImpl implements ShellService {
         });
         return stringBuffer.toString();
     }
+
+
 }
 
 
